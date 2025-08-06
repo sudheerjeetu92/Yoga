@@ -6,8 +6,15 @@ import { assets } from "../../assets/assets";
 
 const CourseDetails = () => {
   const { id } = useParams(); // get course id from URL
-  const { allCourses, calculateRating } = useContext(AppContext); // get all courses from context
+  const {
+    allCourses,
+    calculateRating,
+    calculateNoOfLecture,
+    calculateChapterTime,
+    calculateCourseDuration,
+  } = useContext(AppContext); // get all courses from context
   const [courseData, setCourseData] = useState(null);
+  const [openSections, setOpenSections] = useState({});
 
   // Find the course from allCourses using the ID
   const fetchCourseData = () => {
@@ -18,6 +25,10 @@ const CourseDetails = () => {
   useEffect(() => {
     fetchCourseData();
   }, [allCourses, id]);
+
+  const toggleSection = (index) => {
+    setOpenSections((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
 
   // Helper to convert minutes to human-readable format
   const getDuration = (minutes) =>
@@ -67,35 +78,59 @@ const CourseDetails = () => {
             {courseData.enrolledStudents.length > 1 ? "students" : "student"}
           </p>
         </div>
+        <p className="text-sm">
+          Course by <span className="text-blue-600 underline">Sudheer</span>
+        </p>
 
-        {/* Render each chapter */}
-        {courseData.courseContent.map((chapter, index) => (
-          <div key={index} className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">
-              {chapter.chapterTitle}
-            </h2>
-            <ul className="list-disc md:pl-10 pl-4 pr-4 py-2 text-gray-600 border-t border-gray-300">
-              {chapter.chapterContent.map((lecture, i) => (
-                <li key={i} className="flex items-start gap-2 py-1">
-                  <img
-                    src={assets.play_icon}
-                    alt="play icon"
-                    className="w-4 h-4 mt-1"
-                  />
-                  <div className="flex items-center justify-between w-full text-gray-800 text-xs md:text-default">
-                    <p>{lecture.lectureTitle}</p>
-                    <div className="flex gap-2">
-                      {lecture.isPreviewFree && (
-                        <p className="text-green-600">Preview</p>
-                      )}
-                      <p>{getDuration(lecture.lectureDuration)}</p>
-                    </div>
+        <div className="pt-8 text-gray-800">
+          <h2 className="text-xl font-medium">Course Structure</h2>
+
+          {/* Render each chapter */}
+          <div className="pt-5">
+            {courseData.courseContent.map((chapter, index) => (
+              <div
+                key={index}
+                className="border border-gray-300 bg-white mb-2 rounded"
+              >
+                <div className="flex  items-center justify-between px-4 py-3 cursor-pointer select-none" onClick={()=>{toggleSection(index)}}>
+                  <div className="flex items-center gap-2">
+                    <img src={assets.down_arrow_icon} alt="arrow icon" />
+                    <p className="text-xl font-semibold mb-2">
+                      {chapter.chapterTitle}
+                    </p>
                   </div>
-                </li>
-              ))}
-            </ul>
+                  <p className="text-sm md:text-default">
+                    {chapter.chapterContent.length} lecture -
+                    {calculateChapterTime(chapter)}
+                  </p>
+                </div>
+
+                <div className={`overflow-hidden transition-all duration-300 ${openSections[index] ? "max-h-max" : "max-h-0" }`}>
+                  <ul className="list-disc md:pl-10 pl-4 pr-4 py-2 text-gray-600 border-t border-gray-300">
+                    {chapter.chapterContent.map((lecture, i) => (
+                      <li key={i} className="flex items-start gap-2 py-1">
+                        <img
+                          src={assets.play_icon}
+                          alt="play icon"
+                          className="w-4 h-4 mt-1"
+                        />
+                        <div className="flex items-center justify-between w-full text-gray-800 text-xs md:text-default">
+                          <p>{lecture.lectureTitle}</p>
+                          <div className="flex gap-2">
+                            {lecture.isPreviewFree && (
+                              <p className="text-green-600">Preview</p>
+                            )}
+                            <p>{getDuration(lecture.lectureDuration)}</p>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   ) : (
@@ -104,29 +139,3 @@ const CourseDetails = () => {
 };
 
 export default CourseDetails;
-
-// import React, { useContext, useEffect, useState } from "react";
-// import { useParams } from "react-router-dom";
-// import { AppContext } from "../../context/AppContext";
-
-// const CourseDetails = () => {
-//   const { id } = useParams();
-//   const [courseData, setCourseData] = useState(null);
-//   const { allCourses } = useContext(AppContext);
-
-//   const fetchCourseData = async () => {
-//     const findCourse = allCourses.find((course) => course._id === id);
-//     setCourseData(courseData);
-//   };
-
-//   useEffect(() => {
-//     fetchCourseData();
-//   },[]);
-
-//   return <div className="flex">
-//     <div></div>
-//     <div></div>
-//   </div>;
-// };
-
-// export default CourseDetails;
